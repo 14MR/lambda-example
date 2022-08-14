@@ -1,0 +1,73 @@
+{
+  "body": "{\"title\": \"new\", \"description\": \"description123\", \"date\": \"12-12-2012\"}",
+  "headers": {
+    "Accept": "*/*",
+    "Content-Length": "71",
+    "Content-Type": "application/json",
+    "Host": "localhost:3000",
+    "User-Agent": "curl/7.81.0",
+    "X-Forwarded-Port": "3000",
+    "X-Forwarded-Proto": "http"
+  },
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {
+    "Accept": [
+      "*/*"
+    ],
+    "Content-Length": [
+      "71"
+    ],
+    "Content-Type": [
+      "application/json"
+    ],
+    "Host": [
+      "localhost:3000"
+    ],
+    "User-Agent": [
+      "curl/7.81.0"
+    ],
+    "X-Forwarded-Port": [
+      "3000"
+    ],
+    "X-Forwarded-Proto": [
+      "http"
+    ]
+  },
+  "multiValueQueryStringParameters": null,
+  "path": "/newsitem",
+  "pathParameters": {
+    "proxy": "newsitem"
+  },
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "domainName": "localhost:3000",
+    "extendedRequestId": null,
+    "httpMethod": "POST",
+    "identity": {
+      "accountId": null,
+      "apiKey": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityPoolId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "Custom User Agent String",
+      "userArn": null
+    },
+    "path": "/{proxy+}",
+    "protocol": "HTTP/1.1",
+    "requestId": "64fa48a9-d724-4b9d-b2c1-c0c119db8a8e",
+    "requestTime": "15/Aug/2022:02:39:19 +0000",
+    "requestTimeEpoch": 1660531159,
+    "resourceId": "123456",
+    "resourcePath": "/{proxy+}",
+    "stage": "Prod"
+  },
+  "resource": "/{proxy+}",
+  "stageVariables": null,
+  "version": "1.0"
+}

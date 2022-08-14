@@ -1,41 +1,85 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  github-actions-with-aws-sam
+  A simple AWS Lambda implementing CRUD over NewsItems
 
-  Sample SAM Template for github-actions-with-aws-sam
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
+  Api:
+    TracingEnabled: true
+    Cors:
+      AllowOrigin: "'*'"
+      AllowHeaders: "'Content-Type'"
+      MaxAge: "'300'"
+    BinaryMediaTypes: # see Binary responses section
+      - "*~1*" # converts to */* for any binary type
   Function:
-    Timeout: 3
+    Timeout: 5
+    Layers: #
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPython:29
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  NewsCRUDFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https:l//github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello_world/
+      Role: !GetAtt NewsCRUDFunctionIamRole.Arn
+      CodeUri: news_api/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.9
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        NewsList:
+          Type: Api
           Properties:
-            Path: /hello
+            Path: /news
             Method: get
-
+        NewsAdd:
+          Type: Api
+          Properties:
+            Path: /newsitem
+            Method: post
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07e896e930f4faaf8
+        SubnetIds:
+          - subnet-0ea454e1c9763475e
+          - subnet-0db7b016948f4bab7
+          - subnet-0f46ac4997897811f
+  NewsCRUDFunctionIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetResourcePolicy"
+                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:DescribeSecret"
+                  - "secretsmanager:ListSecretVersionIds"
+                Resource: arn:aws:secretsmanager:eu-west-2:159421668328:secret:documentDB-d3KKGq
+              - "Effect": "Allow"
+                "Action": "secretsmanager:ListSecrets"
+                "Resource": "*"
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  NewsCRUDApi:
+    Description: "API Gateway endpoint URL for Prod stage for News CRUD function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  NewsCRUDFunction:
+    Description: "News CRUD Lambda Function ARN"
+    Value: !GetAtt NewsCRUDFunction.Arn
+  NewsCRUDFunctionIamRole:
+    Description: "Implicit IAM Role created for News CRUD function"
+    Value: !GetAtt NewsCRUDFunctionIamRole.Arn
