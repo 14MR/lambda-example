@@ -30,16 +30,10 @@ def get_secret(secret_name, region_name):
     # Create a Secrets Manager client
     session = boto3.session.Session()
     boto_config = BotoConfig(
-        connect_timeout=3,
-        retries={
-            "max_attempts": 3,
-            "mode": "standard"
-        }
+        connect_timeout=3, retries={"max_attempts": 3, "mode": "standard"}
     )
     boto3_client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name,
-        config=boto_config
+        service_name="secretsmanager", region_name=region_name, config=boto_config
     )
 
     # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
@@ -47,63 +41,63 @@ def get_secret(secret_name, region_name):
     # We rethrow the exception by default.
 
     try:
-        get_secret_value_response = boto3_client.get_secret_value(
-            SecretId=secret_name
-        )
+        get_secret_value_response = boto3_client.get_secret_value(SecretId=secret_name)
     except ClientError as e:
-        if e.response['Error']['Code'] == 'DecryptionFailureException':
+        if e.response["Error"]["Code"] == "DecryptionFailureException":
             # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
             # Deal with the exception here, and/or rethrow at your discretion.
             raise e
-        elif e.response['Error']['Code'] == 'InternalServiceErrorException':
+        elif e.response["Error"]["Code"] == "InternalServiceErrorException":
             # An error occurred on the server side.
             # Deal with the exception here, and/or rethrow at your discretion.
             raise e
-        elif e.response['Error']['Code'] == 'InvalidParameterException':
+        elif e.response["Error"]["Code"] == "InvalidParameterException":
             # You provided an invalid value for a parameter.
             # Deal with the exception here, and/or rethrow at your discretion.
             raise e
-        elif e.response['Error']['Code'] == 'InvalidRequestException':
+        elif e.response["Error"]["Code"] == "InvalidRequestException":
             # You provided a parameter value that is not valid for the current state of the resource.
             # Deal with the exception here, and/or rethrow at your discretion.
             raise e
-        elif e.response['Error']['Code'] == 'ResourceNotFoundException':
+        elif e.response["Error"]["Code"] == "ResourceNotFoundException":
             # We can't find the resource that you asked for.
             # Deal with the exception here, and/or rethrow at your discretion.
             raise e
     else:
         # Decrypts secret using the associated KMS key.
         # Depending on whether the secret is a string or binary, one of these fields will be populated.
-        if 'SecretString' in get_secret_value_response:
-            return get_secret_value_response['SecretString']
+        if "SecretString" in get_secret_value_response:
+            return get_secret_value_response["SecretString"]
         else:
-            return base64.b64decode(get_secret_value_response['SecretBinary'])
+            return base64.b64decode(get_secret_value_response["SecretBinary"])
 
 
-credentials = json.loads(get_secret(secret_name=news_secret_name, region_name=news_region_name))
+credentials = json.loads(
+    get_secret(secret_name=news_secret_name, region_name=news_region_name)
+)
 client = pymongo.MongoClient(
-    host=credentials['host'],
-    username=credentials['username'],
-    password=credentials['password'],
-    tls='true',
-    tlsAllowInvalidCertificates=True
+    host=credentials["host"],
+    username=credentials["username"],
+    password=credentials["password"],
+    tls="true",
+    tlsAllowInvalidCertificates=True,
 )
 db = client.sample_database
-news = db['news']
+news = db["news"]
 
 
 @app.get("/news")
 def list_news():
-    return loads(dumps(news.find({}, {'_id': False})))
+    """List all news available in DB"""
+    return loads(dumps(news.find({}, {"_id": False})))
 
 
 @app.post("/newsitem")
 def add_newsitem():
+    """Add a new news item to DB"""
     # since it's just one endpoint, pydantic is redundant here
     try:
-        item = NewsItem(
-            **app.current_event.json_body
-        )
+        item = NewsItem(**app.current_event.json_body)
     except TypeError as e:
         raise BadRequestError("Invalid required parameters")
 
